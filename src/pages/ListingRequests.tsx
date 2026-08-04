@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Trash2, CheckCircle2, Circle, Phone, Package } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { listingRequestsApi } from '../api/resources';
 import type { ListingRequest } from '../types';
+import type { AdminLayoutContext } from '../components/layout/AdminLayout';
 
 export default function ListingRequests() {
+  const { refreshCounts } = useOutletContext<AdminLayoutContext>();
   const [items, setItems] = useState<ListingRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -24,6 +27,7 @@ export default function ListingRequests() {
   async function toggleResolved(item: ListingRequest) {
     setItems((prev) => prev.map((i) => (i._id === item._id ? { ...i, isResolved: !i.isResolved } : i)));
     await listingRequestsApi.setResolved(item._id, !item.isResolved);
+    refreshCounts();
   }
 
   async function handleDelete() {
@@ -33,6 +37,7 @@ export default function ListingRequests() {
       await listingRequestsApi.remove(deleteId);
       setDeleteId(null);
       await load();
+      refreshCounts();
     } finally {
       setIsDeleting(false);
     }

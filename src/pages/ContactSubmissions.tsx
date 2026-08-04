@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { Trash2, CheckCircle2, Circle, Mail, Phone } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { contactApi } from '../api/resources';
 import type { ContactSubmission } from '../types';
+import type { AdminLayoutContext } from '../components/layout/AdminLayout';
 
 export default function ContactSubmissions() {
+  const { refreshCounts } = useOutletContext<AdminLayoutContext>();
   const [items, setItems] = useState<ContactSubmission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -24,6 +27,7 @@ export default function ContactSubmissions() {
   async function toggleResolved(item: ContactSubmission) {
     setItems((prev) => prev.map((i) => (i._id === item._id ? { ...i, isResolved: !i.isResolved } : i)));
     await contactApi.setResolved(item._id, !item.isResolved);
+    refreshCounts();
   }
 
   async function handleDelete() {
@@ -33,6 +37,7 @@ export default function ContactSubmissions() {
       await contactApi.remove(deleteId);
       setDeleteId(null);
       await load();
+      refreshCounts();
     } finally {
       setIsDeleting(false);
     }
