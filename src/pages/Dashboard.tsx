@@ -23,8 +23,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function load() {
-      const [listings, categories, documents, news, tenders, contacts, requests] = await Promise.all([
-        listingsApi.listAll().catch(() => []),
+      const [listingsRes, categories, documents, news, tenders, contacts, requests] = await Promise.all([
+        listingsApi.listAll(1, 1).catch(() => ({ total: 0 })),
         categoriesApi.list().catch(() => []),
         documentsApi.list().catch(() => []),
         newsApi.list().catch(() => []),
@@ -34,7 +34,7 @@ export default function Dashboard() {
       ]);
 
       setStats([
-        { label: 'Оголошення', value: listings.length, icon: Package, color: 'bg-brand-emerald-100 text-brand-emerald-700' },
+        { label: 'Оголошення', value: listingsRes.total, icon: Package, color: 'bg-brand-emerald-100 text-brand-emerald-700' },
         { label: 'Категорії', value: categories.length, icon: FolderTree, color: 'bg-navy-100 text-navy-700' },
         { label: 'Документи', value: documents.length, icon: FileText, color: 'bg-amber-100 text-amber-700' },
         { label: 'Новини', value: news.length, icon: Newspaper, color: 'bg-blue-100 text-blue-700' },

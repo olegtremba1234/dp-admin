@@ -40,8 +40,18 @@ export const categoriesApi = {
 // ---------------------------------------------------------------------------
 // Listings
 // ---------------------------------------------------------------------------
+export interface PaginatedListings {
+  items: Listing[];
+  total: number;
+  page: number;
+  pages: number;
+}
+
 export const listingsApi = {
-  listAll: () => api.get<Listing[]>('/listings/admin/all').then((r) => r.data),
+  listAll: (page = 1, limit = 15) =>
+    api
+      .get<PaginatedListings>('/listings/admin/all', { params: { page, limit } })
+      .then((r) => r.data),
   getById: (id: string) => api.get<Listing>(`/listings/${id}`).then((r) => r.data),
   create: (payload: Partial<Listing>) => api.post<Listing>('/listings', payload).then((r) => r.data),
   update: (id: string, payload: Partial<Listing>) =>

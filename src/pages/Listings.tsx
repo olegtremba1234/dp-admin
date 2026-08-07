@@ -4,10 +4,13 @@ import PageHeader from '../components/ui/PageHeader';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import Pagination from '../components/ui/Pagination';
 import { Input, Textarea, Select } from '../components/ui/Fields';
 import { listingsApi, categoriesApi, uploadApi } from '../api/resources';
 import { resolveFileUrl } from '../api/client';
 import type { Listing, Category } from '../types';
+
+const PAGE_SIZE = 15;
 
 type AttributeRow = { key: string; value: string };
 
@@ -31,6 +34,9 @@ const emptyForm = {
 export default function Listings() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -42,20 +48,28 @@ export default function Listings() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
 
-  async function loadData() {
+  async function loadListings(targetPage = page) {
     setIsLoading(true);
-    const [listingsData, categoriesData] = await Promise.all([
-      listingsApi.listAll(),
-      categoriesApi.list(),
-    ]);
-    setListings(listingsData);
-    setCategories(categoriesData);
+    const res = await listingsApi.listAll(targetPage, PAGE_SIZE);
+    setListings(res.items);
+    setTotal(res.total);
+    setPages(res.pages);
     setIsLoading(false);
   }
 
   useEffect(() => {
-    loadData();
+    categoriesApi.list().then(setCategories);
   }, []);
+
+  useEffect(() => {
+    loadListings(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  function handlePageChange(newPage: number) {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   function openCreate() {
     setEditingId(null);
@@ -154,11 +168,14 @@ export default function Listings() {
     try {
       if (editingId) {
         await listingsApi.update(editingId, payload);
+        await loadListings(page);
       } else {
         await listingsApi.create(payload);
+        // Нові оголошення сортуються найновішими згори — показуємо першу сторінку
+        setPage(1);
+        await loadListings(1);
       }
       setModalOpen(false);
-      await loadData();
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Не вдалося зберегти оголошення');
     } finally {
@@ -172,7 +189,11 @@ export default function Listings() {
     try {
       await listingsApi.remove(deleteId);
       setDeleteId(null);
-      await loadData();
+      // Якщо видалили останній запис на не першій сторінці — повертаємось на попередню
+      const isLastItemOnPage = listings.length === 1 && page > 1;
+      const targetPage = isLastItemOnPage ? page - 1 : page;
+      if (isLastItemOnPage) setPage(targetPage);
+      await loadListings(targetPage);
     } finally {
       setIsDeleting(false);
     }
@@ -184,7 +205,7 @@ export default function Listings() {
     <div>
       <PageHeader
         title="Оголошення"
-        description="Керування дошкою оголошень: продаж продукції та надання послуг"
+        description={`Керування дошкою оголошень: продаж продукції та надання послуг${total ? ` · всього ${total}` : ''}`}
         action={
           <Button onClick={openCreate}>
             <Plus size={16} /> Додати оголошення
@@ -273,6 +294,8 @@ export default function Listings() {
           </tbody>
         </table>
       </div>
+
+      <Pagination page={page} pages={pages} onChange={handlePageChange} />
 
       {/* Форма створення/редагування */}
       <Modal
