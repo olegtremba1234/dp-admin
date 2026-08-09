@@ -85,6 +85,40 @@ export interface ListingRequest {
   createdAt: string;
 }
 
+export type EmploymentType = 'full-time' | 'part-time' | 'contract';
+export type VacancyStatus = 'open' | 'closed';
+
+export interface Vacancy {
+  _id: string;
+  title: string;
+  department?: string;
+  employmentType: EmploymentType;
+  salary?: string;
+  location?: string;
+  description: string;
+  requirements: string;
+  benefits?: string;
+  status: VacancyStatus;
+  isFeatured: boolean;
+  deadline?: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VacancyApplication {
+  _id: string;
+  vacancy: { _id: string; title: string } | string;
+  name: string;
+  phone: string;
+  email?: string;
+  message?: string;
+  isResolved: boolean;
+  createdAt: string;
+}
+
 export interface AdminUser {
   id: string;
   name: string;

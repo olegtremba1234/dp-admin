@@ -8,8 +8,10 @@ import Categories from './pages/Categories';
 import Documents from './pages/Documents';
 import News from './pages/News';
 import Tenders from './pages/Tenders';
+import Vacancies from './pages/Vacancies';
 import ContactSubmissions from './pages/ContactSubmissions';
 import ListingRequests from './pages/ListingRequests';
+import VacancyApplications from './pages/VacancyApplications';
 
 export default function App() {
   return (
@@ -23,8 +25,10 @@ export default function App() {
           <Route path="/documents" element={<Documents />} />
           <Route path="/news" element={<News />} />
           <Route path="/tenders" element={<Tenders />} />
+          <Route path="/vacancies" element={<Vacancies />} />
           <Route path="/contact-submissions" element={<ContactSubmissions />} />
           <Route path="/listing-requests" element={<ListingRequests />} />
+          <Route path="/vacancy-applications" element={<VacancyApplications />} />
         </Route>
       </Routes>
     </AuthProvider>
