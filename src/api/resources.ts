@@ -7,6 +7,8 @@ import type {
   TenderItem,
   ContactSubmission,
   ListingRequest,
+  Vacancy,
+  VacancyApplication,
   AdminUser,
 } from '../types';
 
@@ -94,6 +96,17 @@ export const tendersApi = {
 };
 
 // ---------------------------------------------------------------------------
+// Vacancies
+// ---------------------------------------------------------------------------
+export const vacanciesApi = {
+  list: () => api.get<Vacancy[]>('/vacancies?all=true').then((r) => r.data),
+  create: (payload: Partial<Vacancy>) => api.post<Vacancy>('/vacancies', payload).then((r) => r.data),
+  update: (id: string, payload: Partial<Vacancy>) =>
+    api.put<Vacancy>(`/vacancies/${id}`, payload).then((r) => r.data),
+  remove: (id: string) => api.delete(`/vacancies/${id}`).then((r) => r.data),
+};
+
+// ---------------------------------------------------------------------------
 // Contact submissions & listing requests
 // ---------------------------------------------------------------------------
 export const contactApi = {
@@ -108,6 +121,13 @@ export const listingRequestsApi = {
   setResolved: (id: string, isResolved: boolean) =>
     api.patch(`/forms/listing-requests/${id}`, { isResolved }).then((r) => r.data),
   remove: (id: string) => api.delete(`/forms/listing-requests/${id}`).then((r) => r.data),
+};
+
+export const vacancyApplicationsApi = {
+  list: () => api.get<VacancyApplication[]>('/forms/vacancy-applications').then((r) => r.data),
+  setResolved: (id: string, isResolved: boolean) =>
+    api.patch(`/forms/vacancy-applications/${id}`, { isResolved }).then((r) => r.data),
+  remove: (id: string) => api.delete(`/forms/vacancy-applications/${id}`).then((r) => r.data),
 };
 
 // ---------------------------------------------------------------------------

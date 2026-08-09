@@ -7,15 +7,17 @@ import {
   FileText,
   Newspaper,
   Gavel,
+  Briefcase,
+  ClipboardList,
   Mail,
   MessageSquareText,
   LogOut,
   Wheat,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { contactApi, listingRequestsApi } from '../../api/resources';
+import { contactApi, listingRequestsApi, vacancyApplicationsApi } from '../../api/resources';
 
-type CountKey = 'contact' | 'requests';
+type CountKey = 'contact' | 'requests' | 'vacancyApplications';
 
 const navItems: {
   to: string;
@@ -30,8 +32,10 @@ const navItems: {
   { to: '/documents', label: 'Документи', icon: FileText },
   { to: '/news', label: 'Новини', icon: Newspaper },
   { to: '/tenders', label: 'Тендери', icon: Gavel },
+  { to: '/vacancies', label: 'Вакансії', icon: Briefcase },
   { to: '/contact-submissions', label: 'Звернення', icon: Mail, countKey: 'contact' },
   { to: '/listing-requests', label: 'Заявки по оголошеннях', icon: MessageSquareText, countKey: 'requests' },
+  { to: '/vacancy-applications', label: 'Відгуки на вакансії', icon: ClipboardList, countKey: 'vacancyApplications' },
 ];
 
 export function ProtectedRoute() {
@@ -49,9 +53,9 @@ export function ProtectedRoute() {
 }
 
 // Тип контексту, доступний дочірнім сторінкам через useOutletContext<AdminLayoutContext>().
-// Дозволяє сторінкам "Звернення" і "Заявки по оголошеннях" одразу оновити
-// бейдж-лічильник у сайдбарі після позначення запису виконаним/видалення,
-// не чекаючи наступного циклу опитування.
+// Дозволяє сторінкам "Звернення", "Заявки по оголошеннях" і "Відгуки на
+// вакансії" одразу оновити бейдж-лічильник у сайдбарі після позначення
+// запису виконаним/видалення, не чекаючи наступного циклу опитування.
 export interface AdminLayoutContext {
   refreshCounts: () => void;
 }
@@ -60,7 +64,11 @@ const POLL_INTERVAL_MS = 30_000;
 
 function AdminLayout() {
   const { admin, logout } = useAuth();
-  const [counts, setCounts] = useState<Record<CountKey, number>>({ contact: 0, requests: 0 });
+  const [counts, setCounts] = useState<Record<CountKey, number>>({
+    contact: 0,
+    requests: 0,
+    vacancyApplications: 0,
+  });
 
   const refreshCounts = useCallback(() => {
     contactApi
@@ -73,6 +81,12 @@ function AdminLayout() {
       .list()
       .then((items) =>
         setCounts((c) => ({ ...c, requests: items.filter((i) => !i.isResolved).length }))
+      )
+      .catch(() => {});
+    vacancyApplicationsApi
+      .list()
+      .then((items) =>
+        setCounts((c) => ({ ...c, vacancyApplications: items.filter((i) => !i.isResolved).length }))
       )
       .catch(() => {});
   }, []);
