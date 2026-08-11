@@ -22,6 +22,7 @@ import {
   listingRequestsApi,
   vacancyApplicationsApi,
 } from "../../api/resources";
+import ScrollToTopButton from "../ui/ScrollToTopButton";
 
 type CountKey = "contact" | "requests" | "vacancyApplications";
 
@@ -244,6 +245,8 @@ function AdminLayout() {
           <Outlet context={{ refreshCounts }} />
         </main>
       </div>
+
+      <ScrollToTopButton />
     </div>
   );
 }
